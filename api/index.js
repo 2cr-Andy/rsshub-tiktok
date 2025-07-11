@@ -1,35 +1,56 @@
 export default function handler(req, res) {
     const https = require('https');
+    const http = require('http');
     
-    // 작동하는 공개 RSSHub 찾기
-    const tryRSSHub = (url) => {
-        https.get(url, (response) => {
+    // 더 많은 RSSHub 인스턴스들 시도
+    const instances = [
+        { host: 'rsshub.zeabur.app', protocol: https },
+        { host: 'rsshub.liumingye.cn', protocol: https },
+        { host: 'rsshub.netlify.app', protocol: https },
+        { host: 'rss.shab.fun', protocol: https }
+    ];
+    
+    let attemptIndex = 0;
+    
+    const tryNext = () => {
+        if (attemptIndex >= instances.length) {
+            sendFallback();
+            return;
+        }
+        
+        const instance = instances[attemptIndex];
+        const url = `${instance.host}${req.url}`;
+        console.log(`Trying: ${url}`);
+        
+        instance.protocol.get(`https://${url}`, (response) => {
             if (response.statusCode === 200) {
                 res.setHeader('Content-Type', 'application/xml');
                 res.setHeader('Cache-Control', 'public, max-age=300');
                 response.pipe(res);
             } else {
-                // 실패하면 다른 서버 시도
-                fallbackRSS();
+                attemptIndex++;
+                tryNext();
             }
-        }).on('error', () => {
-            fallbackRSS();
+        }).on('error', (err) => {
+            console.error(`Failed: ${url}`, err.message);
+            attemptIndex++;
+            tryNext();
         });
     };
     
-    // 실패 시 기본 RSS
-    const fallbackRSS = () => {
-        const hashtag = req.url.split('/').pop() || 'tiktok';
+    const sendFallback = () => {
+        // 모든 인스턴스 실패 시
+        const hashtag = req.url.split('/').pop() || 'tiamazingskin';
         const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
 <channel>
 <title>TikTok #${hashtag}</title>
 <link>https://www.tiktok.com/tag/${hashtag}</link>
-<description>TikTok videos for #${hashtag}</description>
+<description>Videos for #${hashtag}</description>
 <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 <item>
-<title>RSSHub 서버 연결 실패</title>
-<description>다른 RSSHub 인스턴스를 시도하거나 Python에서 직접 사용하세요</description>
+<title>테스트 중 - 모든 RSSHub 서버 응답 없음</title>
+<description>시도한 서버: ${instances.map(i => i.host).join(', ')}</description>
 <pubDate>${new Date().toUTCString()}</pubDate>
 </item>
 </channel>
@@ -38,6 +59,5 @@ export default function handler(req, res) {
         res.status(200).send(rss);
     };
     
-    // 첫 번째 시도
-    tryRSSHub('https://rsshub.feeded.xyz' + req.url);
+    tryNext();
 }
