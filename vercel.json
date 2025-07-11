@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm install",
-  "outputDirectory": ".",
+  "buildCommand": "echo 'No build required'",
+  "installCommand": "npm install --production --no-optional",
   "rewrites": [
     {
       "source": "/(.*)",
@@ -9,8 +9,7 @@
   ],
   "functions": {
     "api/index.js": {
-      "maxDuration": 30,
-      "includeFiles": "lib/**"
+      "maxDuration": 30
     }
   }
 }
