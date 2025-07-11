@@ -1,13 +1,18 @@
-export default async function handler(req, res) {
-    try {
-        const { init } = await import('../lib/index.js');
-        const app = await init();
-        return app(req, res);
-    } catch (error) {
-        console.error('Error:', error);
+const https = require('https');
+
+module.exports = (req, res) => {
+    const path = req.url || '/';
+    const proxyUrl = `https://rsshub.app${path}`;
+    
+    https.get(proxyUrl, (proxyRes) => {
+        res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'application/xml');
+        res.setHeader('Cache-Control', 'public, max-age=300');
+        
+        proxyRes.pipe(res);
+    }).on('error', (error) => {
         res.status(500).json({ 
-            error: 'Internal Server Error',
+            error: 'Proxy failed',
             message: error.message 
         });
-    }
-}
+    });
+};
