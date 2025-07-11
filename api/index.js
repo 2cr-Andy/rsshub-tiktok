@@ -1,18 +1,7 @@
-const https = require('https');
-
-module.exports = (req, res) => {
-    const path = req.url || '/';
-    const proxyUrl = `https://rsshub.app${path}`;
-    
-    https.get(proxyUrl, (proxyRes) => {
-        res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'application/xml');
-        res.setHeader('Cache-Control', 'public, max-age=300');
-        
-        proxyRes.pipe(res);
-    }).on('error', (error) => {
-        res.status(500).json({ 
-            error: 'Proxy failed',
-            message: error.message 
-        });
+export default function handler(req, res) {
+    const https = require('https');
+    https.get('https://rsshub.app' + req.url, (r) => {
+        res.status(r.statusCode);
+        r.pipe(res);
     });
-};
+}
