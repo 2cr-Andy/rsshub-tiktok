@@ -21,7 +21,8 @@
         "lib"
     ],
     "scripts": {
-        "build": "tsx scripts/workflow/build-routes.ts && tsdown",
+            "build": "echo 'No build required'",
+        "vercel-build": "echo 'No build required'",
         "build:docs": "tsx scripts/workflow/build-docs.ts",
         "dev": "cross-env NODE_ENV=dev tsx watch --inspect --clear-screen=false lib/index.ts",
         "dev:cache": "cross-env NODE_ENV=production tsx watch --clear-screen=false lib/index.ts",
@@ -200,7 +201,7 @@
     },
     "packageManager": "pnpm@10.12.2+sha512.a32540185b964ee30bb4e979e405adc6af59226b438ee4cc19f9e8773667a66d302f5bfee60a39d3cac69e35e4b96e708a71dd002b7e9359c4112a1722ac323f",
     "engines": {
-        "node": ">=22"
+        "node": "18.x"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
